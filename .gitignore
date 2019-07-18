@@ -5,4 +5,6 @@
 # also except .gitignore and *.py
 !.gitignore
 !*.py
+!*.md
+!*.csv
 
