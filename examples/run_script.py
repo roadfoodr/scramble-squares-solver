@@ -4,7 +4,7 @@ Solve the 'Scramble Squares' class of puzzles.
 """
 from scramble_squares_solver import *
 
-pcs = csv2pcs("examples/scsq_wizards.csv")
-wizards_game = Game(pieces=pcs)
+tiles = csv2tiles("examples/scsq_wizards.csv")
+wizards_game = Game(tiles=tiles)
 solution = wizards_game.solve()
 print(solution)

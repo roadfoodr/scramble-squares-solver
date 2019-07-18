@@ -104,7 +104,7 @@ class Layout:
 
 
 class Symbol:
-    """Class to represent attributes of each symbol contained on a Piece."""
+    """Class to represent attributes of each symbol contained on a Tile."""
     _rare_dict = {}
 
     def __init__(self, sym_type, side, rare=False):
@@ -131,7 +131,7 @@ class Symbol:
         return f'({self.sym_type}|{self.side})'
 
 
-class Piece:
+class Tile:
     """
     Contains assignments of symbols to "canonical" directions (rotation 0).
     Helper queries return symbol / dir assignments for other possible rotations.
@@ -140,8 +140,8 @@ class Piece:
     """
     id_gen = itertools.count()
 
-    def __init__(self, piece_id=None, directions=None, symbols=None):
-        self.piece_id = next(self.id_gen) if piece_id is None else piece_id
+    def __init__(self, tile_id=None, directions=None, symbols=None):
+        self.tile_id = next(self.id_gen) if tile_id is None else tile_id
         self.directions = (['n', 'e', 's', 'w'] if directions is None 
                            else directions)
         self.symbols = ([None for d in self.directions] if symbols is None 
@@ -159,7 +159,7 @@ class Piece:
 
     def get_rotations(self, symbol, dir):
         """
-        Returns a list of rotations (since a Piece can contain more
+        Returns a list of rotations (since a Tile can contain more
         than one instance of a symbol) that would be required to place
         each matching symbol into the specified direction.
         """
@@ -176,30 +176,30 @@ class Piece:
             self.symbols.append(symbol)
 
     def __lt__(self, other):
-        return self.piece_id < other.piece_id
+        return self.tile_id < other.tile_id
 
     def __str__(self):
-        return f'Piece {self.piece_id}'
+        return f'Tile {self.tile_id}'
 
     def __repr__(self):
         symlist = ", ".join([f'{direction}: {self.symbols[i]}'
                              for i, direction in enumerate(self.directions)])
-        return f'Piece {self.piece_id} ({symlist})'
+        return f'Tile {self.tile_id} ({symlist})'
 
 
 @dataclass(unsafe_hash=True)
 class Assignment:
     """
-    Class to represent an assignment of a specific Piece with specific
+    Class to represent an assignment of a specific Tile with specific
     rotation to a specific Loc.
     """
     loc: Loc
-    piece: Piece
+    tile: Tile
     rotation: int
     validated: bool = False
 
     def __repr__(self):
-        return (f'Assignment ({self.loc} | {self.piece} | '
+        return (f'Assignment ({self.loc} | {self.tile} | '
                 f'rot={self.rotation} | {self.validated})'
                 )
 
@@ -208,9 +208,9 @@ class Board:
     """
     Class to represent a possible board configuration as a list of
     Assignments.  A validated Board is one in which all Assignments are
-    consistent with each other (piece symbols match across edges).
+    consistent with each other (tile symbols match across edges).
     A solved Board is a validated Board that includes either all of the Locs
-    or all of the Pieces in a Game (none remain available to be assigned).
+    or all of the Tiles in a Game (none remain available to be assigned).
     """
     def __init__(self, game=None, assignments=None):
         self.game = game
@@ -220,10 +220,10 @@ class Board:
         for assignment in self.assignments:
             if assignment.validated:
                 continue
-            # look at each direction of this assignment's piece
-            piece = assignment.piece
-            for direction in piece.directions:
-                sym = piece.get_symbol(direction, assignment.rotation)
+            # look at each direction of this assignment's tile
+            tile = assignment.tile
+            for direction in tile.directions:
+                sym = tile.get_symbol(direction, assignment.rotation)
                 # find the layout loc associated with the current direction
                 destloc = assignment.loc.get_dest(direction)
                 # rare symbols may not match an "edge" with no associated loc
@@ -239,8 +239,8 @@ class Board:
                     continue
                 # find the symbol in the reciprocal dir of the dest assignment
                 otherdir = self.game.layout.get_paired_dir(direction)
-                otherpiece = destassign.piece
-                othersym = otherpiece.get_symbol(otherdir, destassign.rotation)
+                othertile = destassign.tile
+                othersym = othertile.get_symbol(otherdir, destassign.rotation)
                 # is the reciprocal sym the matching pair to the current sym?
                 if self.game.sympairs.get(sym, None) != othersym:
                     return False
@@ -251,7 +251,7 @@ class Board:
         for assignment in self.assignments:
             if not assignment.validated:
                 return False
-        if (len(self.assignments) == len(self.game.pieces) or
+        if (len(self.assignments) == len(self.game.tiles) or
             len(self.assignments) == len(self.game.layout.locs)):
             return True
         else:
@@ -260,25 +260,25 @@ class Board:
     def extend_board(self):
         """
         Construct a list of next board candidates by finding all Assignment  
-        dirs that point to an open Loc, then finding all matching Pieces that 
+        dirs that point to an open Loc, then finding all matching Tiles that 
         would fit that Assigment.
         """
         next_boards = []
         if Globals.DETERMINISTIC:
-            unassigned_pieces = list(set(self.game.pieces) -
-                                 {a.piece for a in self.assignments})
-            unassigned_pieces.sort()
+            unassigned_tiles = list(set(self.game.tiles) -
+                                 {a.tile for a in self.assignments})
+            unassigned_tiles.sort()
         else:
-            unassigned_pieces = (set(self.game.pieces) -
-                                 {a.piece for a in self.assignments})
+            unassigned_tiles = (set(self.game.tiles) -
+                                 {a.tile for a in self.assignments})
 
         for assignment in self.assignments:
             if not assignment.validated:
                 raise ValueError(
                         "Can only extend a Board that is fully validated.")
-            piece = assignment.piece
-            # look at each direction of this assignment's piece
-            for direction in piece.directions:
+            tile = assignment.tile
+            # look at each direction of this assignment's tile
+            for direction in tile.directions:
                 # find the layout loc associated with the current direction
                 destloc = assignment.loc.get_dest(direction)
                 if not destloc:
@@ -289,15 +289,15 @@ class Board:
                 if destassign:
                     continue
                 # which reciprocal dir and sym match the current dir and sym?
-                sym = piece.get_symbol(direction, assignment.rotation)
+                sym = tile.get_symbol(direction, assignment.rotation)
                 otherdir = self.game.layout.get_paired_dir(direction)
                 othersym = self.game.sympairs.get(sym, None)
                 if not othersym:
                     continue
-                for otherpiece in unassigned_pieces:
-                    rots = otherpiece.get_rotations(othersym, otherdir)
+                for othertile in unassigned_tiles:
+                    rots = othertile.get_rotations(othersym, otherdir)
                     for rot in rots:
-                        newassign = Assignment(loc=destloc, piece=otherpiece,
+                        newassign = Assignment(loc=destloc, tile=othertile,
                                                rotation=rot, validated=False)
                         next_boards.append(Board(self.game,
                                                  self.assignments+[newassign]))
@@ -311,7 +311,7 @@ class Board:
 
     def __str__(self):
         asgns = sorted(self.assignments, key=lambda a:a.loc.coord[1])
-        strs = [f'{a.loc.__str__()}: {a.piece.__str__()}, '
+        strs = [f'{a.loc.__str__()}: {a.tile.__str__()}, '
                 f'rot={a.rotation}' for a in asgns]
         strs.sort()
         return '\n'.join(strs)
@@ -322,17 +322,17 @@ class Board:
 
 class Game:
     """
-    Class to track the state of a Game (Layout, Pieces, Board candidate stack
+    Class to track the state of a Game (Layout, Tiles, Board candidate stack
     for solution in progress.)
     """
-    def __init__(self, layout=None, pieces=None):
+    def __init__(self, layout=None, tiles=None):
         self.layout = Layout() if not layout else layout
-        if not pieces:
-            raise ValueError('Pieces must be supplied at Game initialization.')
+        if not tiles:
+            raise ValueError('Tiles must be supplied at Game initialization.')
         else:
-            self.pieces = pieces
+            self.tiles = tiles
         self._symlist = list(
-                itertools.chain.from_iterable(p.symbols for p in self.pieces))
+                itertools.chain.from_iterable(p.symbols for p in self.tiles))
         self._symfreq = Counter(self._symlist)
         self.symbols = set(self._symlist)
         self.boards_visited = set()
@@ -371,15 +371,15 @@ class Game:
         if not Globals.FIRST_ONLY:
             boards = []
 
-        # Initialize the stack by placing all possible piece rotations
+        # Initialize the stack by placing all possible tile rotations
         # onto one initial location.
         if Globals.DETERMINISTIC:
             loc = next(iter(self.layout.locs))
         else:
             loc = random.choice(list(self.layout.locs))
-        for piece in self.pieces:
-            for rotation, _ in enumerate(piece.directions):
-                assignment = Assignment(loc=loc, piece=piece, 
+        for tile in self.tiles:
+            for rotation, _ in enumerate(tile.directions):
+                assignment = Assignment(loc=loc, tile=tile, 
                                rotation=rotation, validated=False)
                 board = Board(self, [assignment])
                 self.stack.insert(0, board)
@@ -415,26 +415,26 @@ class Game:
             return boards
 
 
-def csv2pcs(filename):
+def csv2tiles(filename):
     '''
-    Convert a csv file into a list of Pieces. The CSV file should have
+    Convert a csv file into a list of Tiles. The CSV file should have
     a header row with "ID" followed by the names of each direction in
     clockwise order (e.g. "ID,north,east,south,west"), then a row for
-    each piece denoting the piece ID and a description of the symbol that 
+    each tile denoting the tile ID and a description of the symbol that 
     lies in each direction.  The symbol description is two parts with
     a "/" separator: first the name of the symbol, then the name of the symbol's
     side. (e.g. "green clover/left", "orange star/right", "yellow moon/left").
     '''
     import pandas
     df = pandas.read_csv(filename)
-    pieces = []
+    tiles = []
     for _, row in df.iterrows():
         symbol_row = list(row[1:5])
         symbols = []
         for symbol_string in symbol_row:
             sym_type, _, sym_side = symbol_string.partition('/')
             symbols.append(Symbol(sym_type=sym_type, side=sym_side))
-        new_piece = Piece(piece_id=row[0],
+        new_tile = Tile(tile_id=row[0],
                   symbols=symbols)
-        pieces.append(new_piece)
-    return pieces
+        tiles.append(new_tile)
+    return tiles
