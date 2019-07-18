@@ -2,20 +2,14 @@
 Solver for the 'Scramble Squares' class of puzzles.
 
 ### The problem
-Scramble Squares are tile-based puzzles marketed by b.dazzle inc.  Each puzzle consists of 9 square tiles, each with half of a symbol on each edge.
-The tiles must be arranged in a 3x3 grid so that all touching edges match with corresponding symbol halves.
+Scramble Squares are tile-based puzzles marketed by b.dazzle inc.  Each puzzle consists of 9 square tiles, with each edge of each tile displaying half of a two-sided symbol. The tiles must be arranged in a 3x3 grid so that all touching edges match with corresponding symbol halves.
 An example is [here](https://www.amazon.com/Dazzle-Wizard-Dragons-Scramble-Squares/dp/B000BTBDRY).
 
 ### The solution space
-Since each of 9 tiles may be placed in 9 locations in the 3x3 grid, there are **9!** possibilities for placing tiles.  Within each such assignment of tiles
-to locations, each tile may be rotated in 4 directions, for a total of **4^9** possibilities.  Therefore, the size of the entire solution space is
-**9! * 4^9**.  
+Since each of 9 tiles may be placed in 9 locations in the 3x3 grid, there are **9!** possibilities for placing tiles.  Within each such assignment of tiles to locations, each tile may be rotated in 4 directions, for a total of **4^9** possibilities.  Therefore, the size of the entire solution space is **9! * 4^9**.  
 
 ### The algorithm
-The solver employs guided depth-first search with backtracking.  A "stack" of candidate solutions is maintained by incrementally extending partial
-board configurations with matching tiles.  Once a particular candidate solution can not be extended further, it is removed from the stack
-and search resumes starting from the previous configuration that has not been fully explored.  Once a valid configuration that uses all tiles
-and/or locations is found, it is returned as the solution.
+By employing guided depth-first search with backtracking, only a small fraction of the solution space must actually be explored.  A "stack" of candidate solutions is maintained by incrementally extending partial board configurations with matching tiles.  Once a particular candidate solution can not be extended further, it is removed from the stack and search resumes starting from the previous configuration that has not been fully explored.  Once a valid configuration that uses all tiles and/or locations is found, it is returned as the solution.
 
 ### Running the solver
 The solver is implemented as a collection of Python classes and functions.  Although a variety of game configurations are supported
