@@ -20,7 +20,7 @@ and/or locations is found, it is returned as the solution.
 ### Running the solver
 The solver is implemented as a collection of Python classes and functions.  Although a variety of game configurations are supported
 (square or even hexagonal grids of arbitrary size), the classic 3x3 version with square tiles is defaulted.  So only the tile
-specifications (particular symbols on particular tiles) are required.  These objects can be generated from a .csv file:
+specifications (particular symbols on particular tiles) are required.  These objects can be generated from a .csv file (shown in [examples](examples/)):
     
     tiles = csv2tiles("scsq_wizards.csv")
     
