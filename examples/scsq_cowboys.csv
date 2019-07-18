@@ -1,0 +1,10 @@
+ID,Top,Right,Bottom,Left
+0,helmet/top,star/top,jersey/top,logo/top
+1,jersey/bottom,logo/top,star/bottom,helmet/bottom
+2,jersey/bottom,star/top,helmet/top,logo/bottom
+3,star/top,helmet/top,jersey/top,logo/top
+4,helmet/top,star/top,jersey/top,logo/bottom
+5,logo/top,star/bottom,jersey/top,helmet/top
+6,jersey/bottom,logo/bottom,helmet/bottom,star/top
+7,helmet/top,logo/top,jersey/top,star/bottom
+8,helmet/bottom,logo/top,jersey/top,star/top

@@ -1,0 +1,8 @@
+#Ignore everything
+*
+# except directories
+!*/
+# also except .gitignore and *.py
+!.gitignore
+!*.py
+

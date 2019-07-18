@@ -1,0 +1,10 @@
+ID,Top,Right,Bottom,Left
+0,R/B,G/B,B/T,W/T
+1,W/T,R/T,G/T,B/B
+2,B/T,R/T,G/B,W/T
+3,R/T,G/T,W/B,B/T
+4,R/B,W/B,G/T,B/B
+5,R/T,B/B,W/B,G/T
+6,G/T,R/T,B/T,W/T
+7,W/T,B/T,G/B,R/T
+8,G/T,R/B,B/T,W/T
