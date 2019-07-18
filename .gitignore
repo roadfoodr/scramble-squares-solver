@@ -6,5 +6,5 @@
 !.gitignore
 !*.py
 !*.md
-!*.csv
+!/examples/
 
