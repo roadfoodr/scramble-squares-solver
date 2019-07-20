@@ -34,7 +34,7 @@ class Loc:
 
     def get_dest(self, direction):
         """ Get the neighboring Loc that corresponds to the specified direction. """
-        return self.direction_map[direction]
+        return self.direction_map.get(direction, None)
     
     def get_neighbors(self):
         return [self.direction_map[direction] 
@@ -416,7 +416,7 @@ class Game:
 
 
 def csv2tiles(filename):
-    '''
+    """
     Convert a csv file into a list of Tiles. The CSV file should have
     a header row with "ID" followed by the names of each direction in
     clockwise order (e.g. "ID,north,east,south,west"), then a row for
@@ -424,7 +424,7 @@ def csv2tiles(filename):
     lies in each direction.  The symbol description is two parts with
     a "/" separator: first the name of the symbol, then the name of the symbol's
     side. (e.g. "green clover/left", "orange star/right", "yellow moon/left").
-    '''
+    """
     import pandas
     df = pandas.read_csv(filename)
     tiles = []

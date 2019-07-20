@@ -1,10 +1,11 @@
 #Ignore everything
 *
-# except directories
+# except directories, with exceptions
 !*/
-# also except .gitignore and *.py
+!/examples/
+!/tests/
+# also except .gitignore, *.md (docs), and *.py
 !.gitignore
 !*.py
 !*.md
-!/examples/
 
