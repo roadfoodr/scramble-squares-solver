@@ -56,14 +56,18 @@ class Layout:
     """
     Creates a dict of Locs corresponding to the coordinates of this Layout.
     Initializes each Loc with its neighboring Locs corresponding to each of
-    the directions in the layout.  Defaults to a 3x3 grid of square locs
+    the directions in the layout.  Coords can either be an iterable of (x,y)
+    tuples, or a string such as '2x2' specifying the number of rows and
+    columns for a rectangular grid.  Defaults to a 3x3 grid of square locs 
     (with neighbors in n, s, e, w directions).
     """
-    def __init__(self, coords=None, direction_map=None, direction_pairs=None):
+    def __init__(self, coords='3x3', direction_map=None):
         self.loc_dict = {}
 
-        if coords is None:
-            self.coords = [(i, j) for j in range(3) for i in range(3)]
+        if 'x' in coords:
+            numrows, _, numcols = coords.partition('x')
+            self.coords = [(i, j) for j in range(int(numrows)) \
+                           for i in range(int(numcols))]
         else:
             self.coords = coords
         for coord in self.coords:
@@ -76,16 +80,18 @@ class Layout:
         else:
             self.direction_map = direction_map
 
-        if direction_pairs is None:
-            self.direction_pairs = {'n':'s', 's':'n', 'e':'w', 'w':'e'}
-        else:
-            self.direction_pairs = direction_pairs
+        # construct direction pairs from the direction map        
+        reverse_direction_map = {v: k for k, v in self.direction_map.items()}
+        self.direction_pairs = {}
+        for direction, dirvec in self.direction_map.items():
+            reverse_dirvec = tuple(-1 * d for d in dirvec)
+            self.direction_pairs[direction] = reverse_direction_map[reverse_dirvec]
 
         self.inner_edges = 0
         for loc in self.locs:
-            for direction, this_coord in self.direction_map.items():
-                try_coord = (loc.coord[0] + this_coord[0],
-                             loc.coord[1] + this_coord[1])
+            for direction, dirvec in self.direction_map.items():
+                try_coord = (loc.coord[0] + dirvec[0],
+                             loc.coord[1] + dirvec[1])
                 dest = (self.loc_dict[try_coord] if try_coord in self.coords
                         else None)
                 loc.set_dir(direction, dest)
@@ -260,8 +266,8 @@ class Board:
     def extend_board(self):
         """
         Construct a list of next board candidates by finding all Assignment  
-        dirs that point to an open Loc, then finding all matching Tiles that 
-        would fit that Assigment.
+        directions that point to an open Loc, then finding all matching Tiles  
+        that would fit that Assigment.
         """
         next_boards = []
         if Globals.DETERMINISTIC:
@@ -310,10 +316,10 @@ class Board:
         return frozenset(self.assignments) in self.game.boards_visited
 
     def __str__(self):
-        asgns = sorted(self.assignments, key=lambda a:a.loc.coord[1])
+        asgns = sorted(self.assignments, 
+                       key=lambda a:(a.loc.coord[1], a.loc.coord[0]))
         strs = [f'{a.loc.__str__()}: {a.tile.__str__()}, '
                 f'rot={a.rotation}' for a in asgns]
-        strs.sort()
         return '\n'.join(strs)
 
     def __repr__(self):
